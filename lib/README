@@ -1,0 +1,5 @@
+Remember:
+
+If you do not link against the shared library but e.g. against the
+static library the license for all sources changes from LGPLv2.1+ to GPLv2.
+To make this more prominent the static library is named accordingly.

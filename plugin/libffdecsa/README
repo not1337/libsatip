@@ -1,0 +1,4 @@
+This is a runtime operation mode selection wrapper for FFdecsa.
+The FFdecsa contains the hopefully original code as obtained.
+The license for the wrapper code is the same as for the original
+FFdecsa code.
