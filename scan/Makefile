@@ -53,7 +53,7 @@ satipprog: satipprog.o ../lib/libsatip.so
 	$(CC) $(LDFLAGS) -o $@ $< -l$(MYLIB) $(CDKLIBS)
 
 install: all
-	@[ `id -u` != 0 ] && sh -c "echo 'must be root to install' ; exit 1"
+	@[ `id -u` = 0 ] || sh -c "echo 'must be root to install' ; exit 1"
 	mkdir -p $(PFX)/sbin
 	install -m 0755 -o root -g root satipscan $(PFX)/sbin/satipscan
 	install -m 0755 -o root -g root satipprog $(PFX)/sbin/satipprog

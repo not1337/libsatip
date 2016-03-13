@@ -58,7 +58,7 @@ satipsink: satipsink.o
 	$(CC) $(LDFLAGS) -o $@ $< -lpthread
 
 install: all
-	@[ `id -u` != 0 ] && sh -c "echo 'must be root to install' ; exit 1"
+	@[ `id -u` = 0 ] || sh -c "echo 'must be root to install' ; exit 1"
 	mkdir -p $(PFX)/bin
 	install -m 0755 -o root -g root satippipe $(PFX)/bin/satippipe
 	install -m 0755 -o root -g root satipdetect $(PFX)/bin/satipdetect

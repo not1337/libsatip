@@ -52,7 +52,7 @@ libsatip_gpl.a: hw.o remap.o server.o client.o util.o scan.o
 	$(AR) rcu $@ $^
 
 install: all
-	@[ `id -u` != 0 ] && sh -c "echo 'must be root to install' ; exit 1"
+	@[ `id -u` = 0 ] || sh -c "echo 'must be root to install' ; exit 1"
 	mkdir -p $(PFX)/lib
 	install -m 0644 -o root -g root libsatip.so.$(SOVERSION).$(SOMINOR) $(PFX)/lib/libsatip.so.$(SOVERSION).$(SOMINOR)
 	ln -sf libsatip.so.$(SOVERSION).$(SOMINOR) $(PFX)/lib/libsatip.so.$(SOVERSION)

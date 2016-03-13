@@ -48,8 +48,8 @@ export GCOV
 all:
 	for i in $(DIRS) ; do $(MAKE) -C $$i || exit 1 ; done
 
-install:
-	@[ `id -u` != 0 ] && sh -c "echo 'must be root to install' ; exit 1"
+install: all
+	@[ `id -u` = 0 ] || sh -c "echo 'must be root to install' ; exit 1"
 	for i in $(DIRS) ; do $(MAKE) -C $$i install || exit 1 ; done
 
 clean:

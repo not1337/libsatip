@@ -47,7 +47,7 @@ sample-plugin.so: sample-plugin.O ../lib/libsatip.so
 	$(CC) $(LDFLAGS) -shared -o $@ $< -lsatip
 
 install: all
-	@[ `id -u` != 0 ] && sh -c "echo 'must be root to install' ; exit 1"
+	@[ `id -u` = 0 ] || sh -c "echo 'must be root to install' ; exit 1"
 	mkdir -p $(PFX)/sbin
 	install -m 0755 -o root -g root satiploopd $(PFX)/sbin/satiploopd
 	-setcap CAP_SETUID,CAP_IPC_LOCK,CAP_SYS_NICE,CAP_SYS_RESOURCE=ep $(PFX)/sbin/satiploopd

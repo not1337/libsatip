@@ -21,7 +21,7 @@ PFX?=/usr/local
 all:
 
 install: all
-	@[ `id -u` != 0 ] && sh -c "echo 'must be root to install' ; exit 1"
+	@[ `id -u` = 0 ] || sh -c "echo 'must be root to install' ; exit 1"
 	mkdir -p $(PFX)/include
 	install -m 0644 -o root -g root satip.h $(PFX)/include/satip.h
 

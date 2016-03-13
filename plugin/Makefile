@@ -57,7 +57,7 @@ satipd-dvbapi-plugin.so: satipd-dvbapi-plugin.O ../lib/libsatip.so libffdecsa/li
 	$(CC) $(LDFLAGS) -shared -o $@ $< -lsatip -Llibffdecsa -Wl,-Bstatic -lffdecsa -Wl,-Bdynamic
 
 install: all
-	@[ `id -u` != 0 ] && sh -c "echo 'must be root to install' ; exit 1"
+	@[ `id -u` = 0 ] || sh -c "echo 'must be root to install' ; exit 1"
 	mkdir -p $(PFX)/lib/satip
 	install -m 0755 -o root -g root satiploopd-cam-plugin.so $(PFX)/lib/satip/satiploopd-cam-plugin.so
 	install -m 0755 -o root -g root satipd-cam-plugin.so $(PFX)/lib/satip/satipd-cam-plugin.so

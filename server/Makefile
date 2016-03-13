@@ -53,7 +53,7 @@ icons.h: icons/tux-icon-48.png icons/tux-icon-48.jpg icons/tux-icon-120.png \
 	./mkiconh.sh
 
 install: all
-	@[ `id -u` != 0 ] && sh -c "echo 'must be root to install' ; exit 1"
+	@[ `id -u` = 0 ] || sh -c "echo 'must be root to install' ; exit 1"
 	mkdir -p $(PFX)/sbin
 	install -m 0755 -o root -g root satipd $(PFX)/sbin/satipd
 	install -m 0755 -o root -g root satipdctl $(PFX)/sbin/satipdctl
