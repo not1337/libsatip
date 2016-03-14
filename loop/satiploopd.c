@@ -5685,6 +5685,7 @@ static void set_plugin_pids(void *ctx,SATIP_PIDS *set,int from_notify_hook)
 	pthread_rwlock_wrlock(&dev->mtx);
 
 	dev->plug.set=*set;
+	if(!dev->plug.set.numpids)dev->plug.set.numpids=SATIP_NOPIDS;
 	update_set(dev,0);
 
 	pthread_rwlock_unlock(&dev->mtx);
