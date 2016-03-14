@@ -2177,22 +2177,27 @@ out:	pthread_mutex_unlock(&dev->tmtx);
 
 static int setprop(DEVICE *dev,struct dtv_property *p)
 {
+	int pol;
 	uint64_t dummy=1;
 
 	switch(p->cmd)
 	{
 	case DTV_CLEAR:
+		pol=dev->tune.pol;
+		satip_util_init_tune(&dev->tune);
+		dev->tune.msys=dev->conf.mode;
 		switch(dev->conf.mode)
 		{
 		case SATIP_DVBS:
 		case SATIP_DVBS2:
 			dev->freq=950000000;
+			dev->tune.mtype=SATIP_QPSK;
+			dev->tune.ro=SATIP_ROFF_035;
+			dev->tune.pol=pol;
 			break;
 		default:dev->freq=54000000;
 			break;
 		}
-		satip_util_init_tune(&dev->tune);
-		dev->tune.msys=dev->conf.mode;
 		break;
 
 	case DTV_TUNE:
@@ -4031,11 +4036,22 @@ static void fe_open(fuse_req_t req,struct fuse_file_info *fi)
 		}
 		dev->hl=0;
 		dev->src=0;
+		satip_util_init_pids(&dev->set);
+		satip_util_init_tune(&dev->tune);
+		dev->tune.msys=dev->conf.mode;
 		switch(dev->conf.mode)
 		{
 		case SATIP_DVBS:
 		case SATIP_DVBS2:
 			dev->freq=1000000000;
+			if(dev->enabled&&dev->conf.lnbpower)
+			{
+				dev->enabled=0;
+				dummy=write(dev->ffd,&dummy,sizeof(dummy));
+			}
+			dev->tune.pol=SATIP_POL_V;
+			dev->tune.mtype=SATIP_QPSK;
+			dev->tune.ro=SATIP_ROFF_035;
 			break;
 		default:dev->freq=54000000;
 			break;
@@ -4043,9 +4059,6 @@ static void fe_open(fuse_req_t req,struct fuse_file_info *fi)
 		pthread_spin_lock(&dev->spin);
 		memset(&dev->status,0,sizeof(dev->status));
 		pthread_spin_unlock(&dev->spin);
-		satip_util_init_pids(&dev->set);
-		satip_util_init_tune(&dev->tune);
-		dev->tune.msys=dev->conf.mode;
 	}
 
 	fi->direct_io=1;
