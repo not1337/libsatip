@@ -440,7 +440,7 @@ static int tcp(ADDR *addr,short port,int devidx,int bufsize)
 		{
 			p.fd=s;
 			p.events=POLLOUT;
-			if(poll(&p,1,500)==1)
+			if(poll(&p,1,1000)==1)
 			{
 				v=sizeof(x);
 				if(!getsockopt(s,SOL_SOCKET,SO_ERROR,&x,&v))
@@ -718,7 +718,7 @@ static char *fetchurl(INSTANCE *inst,char *url,int *size,char *encoding,
 
 	for(len=0,p.events=POLLIN;;)
 	{
-		switch(poll(&p,1,500))
+		switch(poll(&p,1,1000))
 		{
 		case -1:if(errno==EINTR)continue;
 		case 0:	goto err2;
@@ -797,7 +797,7 @@ cont1:	bfr[i++]=0;
 		i=total-len;
 		if(val!=-1)if(i>val-len)i=val-len;
 
-		switch(poll(&p,1,500))
+		switch(poll(&p,1,1000))
 		{
 		case -1:if(errno==EINTR)continue;
 		case 0:	goto err3;
@@ -902,7 +902,7 @@ static int rtsp_reply(CONN *c,SATIP_DATA *data,TRANSPORT *t)
 	{
 		if(len==sizeof(bfr))goto err;
 
-		switch(poll(&p,1,500))
+		switch(poll(&p,1,1000))
 		{
 		case -1:if(errno==EINTR)continue;
 		case 0:	goto err;
@@ -971,7 +971,7 @@ hdr:	bfr[i++]=0;
 		if(len-i)memcpy(body,bfr+i,len-i);
 		for(i=len-i;i<l;i+=r)
 		{
-			switch(poll(&p,1,500))
+			switch(poll(&p,1,1000))
 			{
 			case -1:if(errno==EINTR)continue;
 			case 0:	goto err;
@@ -1532,7 +1532,7 @@ static int http_setup(CONN *c,SATIP_TUNE *tune,SATIP_PIDS *set,
 	{
 		if(pos==TCPBUFF)goto dfterr;
 
-		if(pos==c->fill)switch((len=poll(&p,1,500)))
+		if(pos==c->fill)switch((len=poll(&p,1,1000)))
 		{
 		case -1:if(errno==EINTR)continue;
 		case 0:	goto dfterr;
