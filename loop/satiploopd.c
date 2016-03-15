@@ -192,6 +192,7 @@ typedef struct
 	int ffd;
 	int nfd;
 	int tfd;
+	int cfd;
 	int ifd;
 	int xfd;
 	int dvrbufsize;
@@ -5410,12 +5411,13 @@ static void *feeder(void *data)
 	unsigned int tunecnt=0;
 	int op;
 	int i;
-	int delay=-1;
+	int delay=0;
 	int leaky=0;
 	int enabled=0;
 	int currfe=SATIP_UNSPEC;
-	struct pollfd p[2];
 	uint64_t dummy;
+	struct pollfd p[3];
+	struct itimerspec it;
 	sigset_t sset;
 
 	sigfillset(&sset);
@@ -5427,27 +5429,42 @@ static void *feeder(void *data)
 	p[0].events=POLLIN;
 	p[1].fd=dev->xfd;
 	p[1].events=POLLIN;
+	p[2].fd=dev->cfd;
+	p[2].events=POLLIN;
+
 	satip_util_init_pids(&dev->feederset);
+	memset(&it,0,sizeof(it));
 
 	while(1)
 	{
 		op=0;
 
-		if(poll(p,2,delay)<=0)
+		while(poll(p,3,-1)<=0);
+
+		if(UNLIKELY(p[1].revents&POLLIN))break;
+
+		if(p[2].revents&POLLIN)
 		{
-			if(delay==-1)continue;
-			else if(delay==10)op=4;
+			memset(&it,0,sizeof(it));
+			timerfd_settime(dev->cfd,0,&it,NULL);
+			dummy=read(dev->cfd,&dummy,sizeof(dummy));
+			if(delay==1)op=4;
+			else if(delay==2)delay=0;
 		}
-		else if(UNLIKELY(p[1].revents&POLLIN))break;
-		else if(UNLIKELY(!(p[0].revents&POLLIN)))continue;
-		else dummy=read(p[0].fd,&dummy,sizeof(dummy));
+
+		if(p[0].revents&POLLIN)
+			dummy=read(p[0].fd,&dummy,sizeof(dummy));
 
 		pthread_rwlock_wrlock(&dev->mtx);
 
 		switch(dev->enabled)
 		{
 		case 0:	if(dev->sh)op=1;
-			if(delay==5000)delay=-1;
+			else op=0;
+			delay=0;
+			memset(&it,0,sizeof(it));
+			timerfd_settime(dev->cfd,0,&it,NULL);
+			dummy=read(dev->cfd,&dummy,sizeof(dummy));
 			break;
 
 		case 1:	switch(dev->conf.mode)
@@ -5516,6 +5533,12 @@ static void *feeder(void *data)
 				break;
 			}
 
+			if(delay==2)
+			{
+				pthread_rwlock_unlock(&dev->mtx);
+				continue;
+			}
+
 			if(!dev->sh)
 			{
 				op=2;
@@ -5543,7 +5566,7 @@ static void *feeder(void *data)
 				else if(!op)op=5;
 				dev->feederset=dev->set;
 
-chktune:			if(!op&&delay==10)op=4;
+chktune:			if(!op&&delay==1)op=4;
 				if(tunecnt!=dev->tunecnt)
 				{
 					tunecnt=dev->tunecnt;
@@ -5584,8 +5607,11 @@ chktune:			if(!op&&delay==10)op=4;
 		case 1:	endtune(dev);
 			currfe=dev->feedertune.fe=SATIP_UNSPEC;
 			enabled=0;
-			delay=-1;
+			delay=0;
 			leaky=0;
+			memset(&it,0,sizeof(it));
+			timerfd_settime(dev->cfd,0,&it,NULL);
+			dummy=read(dev->cfd,&dummy,sizeof(dummy));
 			pthread_rwlock_wrlock(&dev->mtx);
 			pthread_spin_lock(&dev->spin);
 			dev->event=0;
@@ -5602,8 +5628,11 @@ chktune:			if(!op&&delay==10)op=4;
 			pthread_rwlock_unlock(&dev->mtx);
 			break;
 
-		case 2:	delay=-1;
+		case 2:	delay=0;
 			leaky=0;
+			memset(&it,0,sizeof(it));
+			timerfd_settime(dev->cfd,0,&it,NULL);
+			dummy=read(dev->cfd,&dummy,sizeof(dummy));
 			pthread_rwlock_wrlock(&dev->mtx);
 			pthread_spin_lock(&dev->spin);
 			dev->event=0;
@@ -5625,7 +5654,12 @@ chktune:			if(!op&&delay==10)op=4;
 				currfe=dev->feedertune.fe;
 				enabled=1;
 			}
-			else delay=5000;
+			else
+			{
+				delay=2;
+				it.it_value.tv_sec=5;
+				timerfd_settime(dev->cfd,0,&it,NULL);
+			}
 			dev->feedertune.fe=SATIP_UNSPEC;
 			break;
 
@@ -5633,8 +5667,11 @@ chktune:			if(!op&&delay==10)op=4;
 			dev->feedertune.fe=currfe;
 			currfe=SATIP_UNSPEC;
 			enabled=0;
-			delay=-1;
+			delay=0;
 			leaky=0;
+			memset(&it,0,sizeof(it));
+			timerfd_settime(dev->cfd,0,&it,NULL);
+			dummy=read(dev->cfd,&dummy,sizeof(dummy));
 			pthread_rwlock_wrlock(&dev->mtx);
 			pthread_spin_lock(&dev->spin);
 			dev->event=0;
@@ -5654,17 +5691,30 @@ chktune:			if(!op&&delay==10)op=4;
 				currfe=dev->feedertune.fe;
 				enabled=1;
 			}
-			else delay=5000;
+			else
+			{
+				delay=2;
+				it.it_value.tv_sec=5;
+				timerfd_settime(dev->cfd,0,&it,NULL);
+			}
 			dev->feedertune.fe=SATIP_UNSPEC;
 			break;
 
-		case 4:	delay=-1;
+		case 4:	delay=0;
 			leaky=0;
+			memset(&it,0,sizeof(it));
+			timerfd_settime(dev->cfd,0,&it,NULL);
+			dummy=read(dev->cfd,&dummy,sizeof(dummy));
 			if(!enabled)break;
 			chgtune(dev);
 			break;
 
-		case 5:	delay=10;
+		case 5:	delay=1;
+			memset(&it,0,sizeof(it));
+			timerfd_settime(dev->cfd,0,&it,NULL);
+			dummy=read(dev->cfd,&dummy,sizeof(dummy));
+			it.it_value.tv_nsec=10000000;
+			timerfd_settime(dev->cfd,0,&it,NULL);
 			break;
 		}
 	}
@@ -5811,38 +5861,41 @@ static void *create(CONFIG *config)
 	if((dev->tfd=timerfd_create(CLOCK_MONOTONIC,TFD_CLOEXEC|TFD_NONBLOCK))
 		==-1)goto err10;
 
-	if((dev->ifd=eventfd(0,EFD_CLOEXEC|EFD_SEMAPHORE))==-1)goto err11;
+	if((dev->cfd=timerfd_create(CLOCK_MONOTONIC,TFD_CLOEXEC|TFD_NONBLOCK))
+		==-1)goto err11;
 
-	if(satip_util_filter_create(&dev->filter))goto err12;
+	if((dev->ifd=eventfd(0,EFD_CLOEXEC|EFD_SEMAPHORE))==-1)goto err12;
 
-	if(pthread_attr_init(&attr))goto err13;
+	if(satip_util_filter_create(&dev->filter))goto err13;
 
-	if(pthread_attr_setstacksize(&attr,STACKSIZE))goto err14;
+	if(pthread_attr_init(&attr))goto err14;
+
+	if(pthread_attr_setstacksize(&attr,STACKSIZE))goto err15;
 
 	for(i=0;i<5;i++)switch(i)
 	{
-	case 0:	if(pthread_create(&dev->th[0],&attr,feeder,dev))goto err15;
+	case 0:	if(pthread_create(&dev->th[0],&attr,feeder,dev))goto err16;
 		break;
 
-	case 1:	if(pthread_create(&dev->th[1],&attr,notifier,dev))goto err15;
+	case 1:	if(pthread_create(&dev->th[1],&attr,notifier,dev))goto err16;
 		break;
 
-	case 2:	if(pthread_create(&dev->th[2],&attr,feworker,dev))goto err15;
+	case 2:	if(pthread_create(&dev->th[2],&attr,feworker,dev))goto err16;
 		break;
 
-	case 3:	if(pthread_create(&dev->th[3],&attr,dmxworker,dev))goto err15;
+	case 3:	if(pthread_create(&dev->th[3],&attr,dmxworker,dev))goto err16;
 		break;
 
-	case 4:	if(pthread_create(&dev->th[4],&attr,dvrworker,dev))goto err15;
+	case 4:	if(pthread_create(&dev->th[4],&attr,dvrworker,dev))goto err16;
 		break;
 	}
 
 	for(i=0;i<3;i++)dummy=read(dev->ifd,&dummy,sizeof(dummy));
-	if(!dev->dvrok||!dev->dmxok||!dev->feok)goto err15;
+	if(!dev->dvrok||!dev->dmxok||!dev->feok)goto err16;
 
 	if(dev->plug.init)if(!(dev->plug.ctx=dev->plug.init(
 		dev->conf.plugcfg[0]?dev->conf.plugcfg:NULL,
-		dev->filter,set_plugin_pids,dev)))goto err15;
+		dev->filter,set_plugin_pids,dev)))goto err16;
 
 	close(dev->ifd);
 
@@ -5854,7 +5907,7 @@ static void *create(CONFIG *config)
 
 	return dev;
 
-err15:	for(i--;i>=0;i--)switch(i)
+err16:	for(i--;i>=0;i--)switch(i)
 	{
 	case 4:	fuse_session_exit(dev->dvrse);
 		pthread_kill(dev->th[4],SIGHUP);
@@ -5871,9 +5924,10 @@ err15:	for(i--;i>=0;i--)switch(i)
 		break;
 	}
 	if(dev->sh)endtune(dev);
-err14:	pthread_attr_destroy(&attr);
-err13:	satip_util_filter_free(dev->filter);
-err12:	close(dev->ifd);
+err15:	pthread_attr_destroy(&attr);
+err14:	satip_util_filter_free(dev->filter);
+err13:	close(dev->ifd);
+err12:	close(dev->cfd);
 err11:	close(dev->tfd);
 err10:	close(dev->xfd);
 err9:	close(dev->ffd);
@@ -5954,6 +6008,7 @@ static void destroy(void *ctx)
 	freepid(dev);
 	satip_util_filter_free(dev->filter);
 
+	close(dev->cfd);
 	close(dev->tfd);
 	close(dev->xfd);
 	close(dev->ffd);
