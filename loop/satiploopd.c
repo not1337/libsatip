@@ -4281,13 +4281,14 @@ static void fe_ioctl(fuse_req_t req,int cmd,void *arg,
 				FE_CAN_BANDWIDTH_AUTO|
 				FE_CAN_GUARD_INTERVAL_AUTO|
 				FE_CAN_HIERARCHY_AUTO|FE_HAS_EXTENDED_CAPS|
-				FE_CAN_MULTISTREAM|FE_CAN_2G_MODULATION|
+				FE_CAN_MULTISTREAM|
 				FE_CAN_RECOVER|FE_CAN_MUTE_TS;
 
 			switch(dev->conf.mode)
 			{
-			case SATIP_DVBS:
 			case SATIP_DVBS2:
+				u.info.caps|=FE_CAN_2G_MODULATION;
+			case SATIP_DVBS:
 				u.info.type=FE_QPSK;
 				switch(dev->conf.lnb)
 				{
@@ -4314,15 +4315,17 @@ static void fe_ioctl(fuse_req_t req,int cmd,void *arg,
         			}
 				break;
 
-			case SATIP_DVBT:
 			case SATIP_DVBT2:
+				u.info.caps|=FE_CAN_2G_MODULATION;
+			case SATIP_DVBT:
 				u.info.type=FE_OFDM;
 				u.info.frequency_min=54000000;
 				u.info.frequency_max=957000000;
 				break;
 
-			case SATIP_DVBC:
 			case SATIP_DVBC2:
+				u.info.caps|=FE_CAN_2G_MODULATION;
+			case SATIP_DVBC:
 				u.info.type=FE_QAM;
 				u.info.frequency_min=54000000;
 				u.info.frequency_max=957000000;
