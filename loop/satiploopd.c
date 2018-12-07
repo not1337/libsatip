@@ -126,6 +126,7 @@ typedef struct
 	int port;
 	int fast;
 	int udevwait;
+	int forcemode;
 	int bufsize;
 	int fetotal;
 	int felist[FE_LIST_MAX];
@@ -414,6 +415,7 @@ static CFGFILE dparams[]=
 	{"plugcfg",0,0,offsetof(CONFIG,plugcfg),dopath},
 	{"fast",0,1,offsetof(CONFIG,fast),NULL},
 	{"udevwait",0,500,offsetof(CONFIG,udevwait),NULL},
+	{"forcemode",0,1,offsetof(CONFIG,forcemode),NULL},
 	{"bufferkb",64,1024,offsetof(CONFIG,bufsize),NULL},
 	{NULL,0,0,0L,NULL}
 };
@@ -2311,27 +2313,42 @@ static int setprop(DEVICE *dev,struct dtv_property *p)
 		case SYS_DVBS:
 			if(dev->conf.mode!=SATIP_DVBS&&
 				dev->conf.mode!=SATIP_DVBS2)return EINVAL;
-			dev->tune.msys=SATIP_DVBS;
+			if(dev->conf.forcemode)
+				dev->tune.msys=dev->conf.mode;
+			else
+				dev->tune.msys=SATIP_DVBS;
 			break;
 		case SYS_DVBS2:
 			if(dev->conf.mode!=SATIP_DVBS&&
 				dev->conf.mode!=SATIP_DVBS2)return EINVAL;
-			dev->tune.msys=SATIP_DVBS2;
+			if(dev->conf.forcemode)
+				dev->tune.msys=dev->conf.mode;
+			else
+				dev->tune.msys=SATIP_DVBS2;
 			break;
 		case SYS_DVBT:
 			if(dev->conf.mode!=SATIP_DVBT&&
 				dev->conf.mode!=SATIP_DVBT2)return EINVAL;
-			dev->tune.msys=SATIP_DVBT;
+			if(dev->conf.forcemode)
+				dev->tune.msys=dev->conf.mode;
+			else
+				dev->tune.msys=SATIP_DVBT;
 			break;
 		case SYS_DVBT2:
 			if(dev->conf.mode!=SATIP_DVBT&&
 				dev->conf.mode!=SATIP_DVBT2)return EINVAL;
-			dev->tune.msys=SATIP_DVBT2;
+			if(dev->conf.forcemode)
+				dev->tune.msys=dev->conf.mode;
+			else
+				dev->tune.msys=SATIP_DVBT2;
 			break;
 		case SYS_DVBC_ANNEX_A:
 			if(dev->conf.mode!=SATIP_DVBC&&
 				dev->conf.mode!=SATIP_DVBC2)return EINVAL;
-			dev->tune.msys=SATIP_DVBC;
+			if(dev->conf.forcemode)
+				dev->tune.msys=dev->conf.mode;
+			else
+				dev->tune.msys=SATIP_DVBC;
 			break;
 		default:dev->tune.msys=dev->conf.mode;
 			break;
