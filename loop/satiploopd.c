@@ -413,7 +413,7 @@ static CFGFILE dparams[]=
 	{"plugin",0,0,offsetof(CONFIG,plugin),dopath},
 	{"plugcfg",0,0,offsetof(CONFIG,plugcfg),dopath},
 	{"fast",0,1,offsetof(CONFIG,fast),NULL},
-	{"udevwait",0,100,offsetof(CONFIG,udevwait),NULL},
+	{"udevwait",0,500,offsetof(CONFIG,udevwait),NULL},
 	{"bufferkb",64,1024,offsetof(CONFIG,bufsize),NULL},
 	{NULL,0,0,0L,NULL}
 };
