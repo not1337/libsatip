@@ -1000,8 +1000,10 @@ static int parsequery(char *cmd,unsigned int caps,int flags,SATIP_TUNE *tune,
 
 	case SATIP_DVBT2:
 		if(!tune->sm&&(caps&SATIP_SM_AUTO))tune->sm=SATIP_SM_AUTO;
-		if(tune->plp==SATIP_UNDEF||tune->t2id==SATIP_UNDEF||!tune->sm)
-			goto err1;
+		if(!tune->sm)goto err1;
+		if(!(flags&SATIP_IGNPLPETC))
+			if(tune->plp==SATIP_UNDEF||tune->t2id==SATIP_UNDEF)
+				goto err1;
 	case SATIP_DVBT:
 		if(!tune->bw&&(caps&SATIP_BW_AUTO))tune->bw=SATIP_BW_AUTO;
 		if(!tune->tmode&&(caps&SATIP_TMOD_AUTO))
@@ -1071,11 +1073,12 @@ static int parsequery(char *cmd,unsigned int caps,int flags,SATIP_TUNE *tune,
 		if(!tune->c2tft&&(caps&SATIP_TFT_AUTO))
 			tune->c2tft=SATIP_TFT_AUTO;
 		if(!tune->bw&&(caps&SATIP_BW_AUTO))tune->bw=SATIP_BW_AUTO;
-		if(!tune->c2tft||!tune->bw||tune->ds==SATIP_UNDEF||
-			tune->plp==SATIP_UNDEF)goto err1;
+		if(!tune->c2tft||!tune->bw||tune->t2id!=SATIP_UNDEF)goto err1;
 		if(tune->src||tune->pol||tune->ro||tune->mtype||tune->sr||
 			tune->fec||tune->tmode||tune->gi)goto err1;
-		if(tune->t2id!=SATIP_UNDEF)goto err1;
+		if(!(flags&SATIP_IGNPLPETC))
+			if(tune->plp==SATIP_UNDEF||tune->ds==SATIP_UNDEF)
+				goto err1;
 		if(tune->sm||tune->specinv||tune->plts)goto err1;
 		switch(tune->bw)
 		{

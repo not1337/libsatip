@@ -152,6 +152,7 @@ extern "C" {
 #define SATIP_IGNCAPS	0x01
 #define SATIP_SADOK	0x02
 #define SATIP_RTPQUERY	0x04
+#define SATIP_IGNPLPETC	0x08
 
 #define SATIP_SYSFAIL	-1
 #define SATIP_STRLIMIT	-2
