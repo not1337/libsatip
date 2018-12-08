@@ -448,7 +448,8 @@ static int parse_config(char *fn,CONFIG *c,int sfd)
 				goto err2;
 			}
 			satip_util_init_tune(&c->dvbt[c->dvbtnum]);
-			if(satip_util_parse(SATIP_PARSE_QRY,0,SATIP_IGNCAPS,
+			if(satip_util_parse(SATIP_PARSE_QRY,0,
+				SATIP_IGNCAPS|SATIP_IGNPLPETC,
 				val+1,NULL,NULL,0,NULL,NULL,
 				&c->dvbt[c->dvbtnum++],&set,&add,&del,NULL)||
 				set.numpids!=SATIP_NOPIDS||add.numpids||
@@ -463,7 +464,8 @@ static int parse_config(char *fn,CONFIG *c,int sfd)
 				goto err2;
 			}
 			satip_util_init_tune(&c->dvbc[c->dvbcnum]);
-			if(satip_util_parse(SATIP_PARSE_QRY,0,SATIP_IGNCAPS,
+			if(satip_util_parse(SATIP_PARSE_QRY,0,
+				SATIP_IGNCAPS|SATIP_IGNPLPETC,
 				val+1,NULL,NULL,0,NULL,NULL,
 				&c->dvbc[c->dvbcnum++],&set,&add,&del,NULL)||
 				set.numpids!=SATIP_NOPIDS||add.numpids||
