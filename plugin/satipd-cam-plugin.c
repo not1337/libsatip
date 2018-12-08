@@ -591,7 +591,8 @@ static int parse_config(char *fn,GLOBAL *g)
 				t=&t[g->filtertotal++];
 				satip_util_init_tune(t);
 				if(satip_util_parse(SATIP_PARSE_QRY,0,
-					SATIP_IGNCAPS,val+1,NULL,NULL,0,NULL,
+					SATIP_IGNCAPS|SATIP_IGNPLPETC,
+					val+1,NULL,NULL,0,NULL,
 					NULL,t,&set,&add,&del,NULL)||
 					set.numpids!=SATIP_NOPIDS||add.numpids||
 					del.numpids)goto err3;
