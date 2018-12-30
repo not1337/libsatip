@@ -12,6 +12,7 @@
 #include <sys/eventfd.h>
 #include <sys/timerfd.h>
 #include <sys/socket.h>
+#include <sys/uio.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <pthread.h>
@@ -28,6 +29,7 @@
 #include "libffdecsa/ffdecsa.h"
 
 #ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wmisleading-indentation"
 #define LIKELY(a)	__builtin_expect((a),1)
 #define UNLIKELY(a)	__builtin_expect((a),0)
 static __inline__ int sync_lock_init(int *a) {*a=0;return 0;}

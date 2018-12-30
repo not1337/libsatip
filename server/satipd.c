@@ -20,6 +20,7 @@
 #include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/uio.h>
 #include <dlfcn.h>
 #include <grp.h>
 #include <pwd.h>
