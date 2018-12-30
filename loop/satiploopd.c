@@ -2645,7 +2645,9 @@ static void dvr_post(void *userdata)
 	unused=chown(devpath,owner,group);
 	unused=chmod(devpath,perms);
 	setfsuid(getuid());
+	pthread_spin_lock(&dev->spin);
 	dev->dvrok=1;
+	pthread_spin_unlock(&dev->spin);
 	dummy=write(dev->ifd,&dummy,sizeof(dummy));
 }
 
@@ -3054,7 +3056,9 @@ static void dmx_post(void *userdata)
 	unused=chown(devpath,owner,group);
 	unused=chmod(devpath,perms);
 	setfsuid(getuid());
+	pthread_spin_lock(&dmx->dev->spin);
 	dev->dmxok=1;
+	pthread_spin_unlock(&dmx->dev->spin);
 	dummy=write(dev->ifd,&dummy,sizeof(dummy));
 }
 
@@ -3999,7 +4003,9 @@ static void fe_post(void *userdata)
 	unused=chown(devpath,owner,group);
 	unused=chmod(devpath,perms);
 	setfsuid(getuid());
+	pthread_spin_lock(&dev->spin);
 	dev->feok=1;
+	pthread_spin_unlock(&dev->spin);
 	dummy=write(dev->ifd,&dummy,sizeof(dummy));
 }
 
