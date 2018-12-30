@@ -32,6 +32,7 @@
 #include <sys/timerfd.h>
 #include <sys/eventfd.h>
 #include <sys/epoll.h>
+#include <sys/uio.h>
 #include <signal.h>
 #include <limits.h>
 #include <iconv.h>

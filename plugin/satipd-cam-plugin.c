@@ -23,6 +23,7 @@
 #include "satip.h"
 
 #ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wmisleading-indentation"
 #define LIKELY(a)	__builtin_expect((a),1)
 #define UNLIKELY(a)	__builtin_expect((a),0)
 static __inline__ int sync_lock_init(int *a) {*a=0;return 0;}

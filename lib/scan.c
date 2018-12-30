@@ -30,6 +30,10 @@
 #include "satip.h"
 #include "common.h"
 
+#ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wmisleading-indentation"
+#endif
+
 #define MAXPMT		32
 #define DVBCTMHZ	2048
 #define DVBSMHZ		24576
