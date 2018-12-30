@@ -44,6 +44,7 @@
 #include "satip.h"
 
 #ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wmisleading-indentation"
 #define LIKELY(a)	__builtin_expect((a),1)
 #define UNLIKELY(a)	__builtin_expect((a),0)
 static __inline__ int sync_lock_init(int *a) {*a=0;return 0;}
@@ -3056,9 +3057,9 @@ static void dmx_post(void *userdata)
 	unused=chown(devpath,owner,group);
 	unused=chmod(devpath,perms);
 	setfsuid(getuid());
-	pthread_spin_lock(&dmx->dev->spin);
+	pthread_spin_lock(&dev->spin);
 	dev->dmxok=1;
-	pthread_spin_unlock(&dmx->dev->spin);
+	pthread_spin_unlock(&dev->spin);
 	dummy=write(dev->ifd,&dummy,sizeof(dummy));
 }
 
